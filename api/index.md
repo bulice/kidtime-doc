@@ -15,11 +15,15 @@
 
 #### [login]登录 login `POST`
 
+| key | type | desc |
+| --- | --- | ---- |
 | username | string | 用户名 |
 | password | string | 密码 |
 | type | int | 3: 教师, 4: 家长 |
 
 错误:
+| key | type | desc |
+| --- | --- | ---- |
 | 500 | type错误 |
 | 501 | 用户名或密码错误 |
 | 502 | 绑定状态错误 |
