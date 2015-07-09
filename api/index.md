@@ -11,9 +11,9 @@
 
 ## 接口列表
 
-### [user]用户模块 user
+### 用户模块 user
 
-#### [login]登录 login `POST`
+#### 登录 login `POST`
 
 | key | type | desc |
 | --- | --- | ---- |
