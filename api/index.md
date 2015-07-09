@@ -1,19 +1,37 @@
 # 萌养时光第三版 接口文档
 
-## 更新历史
+## <a id="content"></a>目录
+
+*   [更新历史](#history)
+*   [TODO](#TODO)
+*   [说明](#intro)
+    *   [基础部分](#intro-basis)
+    *   [翻页](#intro-paged)
+    *   [数据类型](#intro-dataType)
+    *   [身份验证](#intro-auth)
+    *   [文件部分](#intro-file)
+*   [接口列表](#api)
+    *   [用户模块](#api-user)
+        *   [用户登录](#api-user-login)
+
+## <a id="history"></a>更新历史
 
 * 2015-7-9: 初始化文档, 已完成模块: User, Feed
 
-## TODO
+[返回目录](#content)
 
-* 推送
-* 聊天
-* 频道
-* 等等等等
+## <a id="TODO"></a>TODO
 
-## 说明
+*   推送
+*   聊天
+*   频道
+*   等等等等
 
-### 基础部分
+[返回目录](#content)
+
+## <a id="intro"></a>说明
+
+### <a id="intro-basis"></a>基础部分
 
 *   api访问路径: <http://v3.kindertime.cn/api/{模块名}/{方法}>
 *   api测试器: <http://v3.kindertime.cn/test/index.html> **是否需要单独建一个测试环境?**
@@ -38,7 +56,9 @@
     
 *   字段表中加#的字段表示可空
 
-### 翻页
+[返回目录](#content)
+
+### <a id="intro-paged"></a>翻页
 
 *   接口可翻页标志: `PAGED`
 *   如果接口可翻页, 可在入参中加上`limit`字段限制每页数据条数, 默认为`10`
@@ -46,7 +66,9 @@
 *   向后翻页(获取历史消息): 在入参中加上`next`字段, 如无特殊说明, 值为当前接口返回的数据中最后一条数据的`_id`字段
 *   `prev`字段的优先级高于`next`
 
-### 数据类型
+[返回目录](#content)
+
+### <a id="intro-dataType"></a>数据类型
 
 *   基础数据类型列表
 
@@ -92,19 +114,23 @@
     | link | Url | 链接地址, type=4有效 |
     | link_cover | FileId\|null | 链接封面 |
     | link_title | string(1, 200)\|null | 链接标题 |
+    
+[返回目录](#content)
 
-### 身份验证
+### <a id="intro-auth"></a>身份验证
 
 *   除了用户登录接口外均需要验证, 如果验证失败, 则返回status为401
 *   验证方式: 在请求头部加入AUTHORIZATION字段, 值为用户登录时返回的token
 *   token有效期为1个月(这个有效期必需有, 这是PHP中SESSION控制机制), 每次请求会自动续期
 *   如果当前用户在另一个地方重新登录拿了新的token, 则当前token失效
 
-## 接口列表
+[返回目录](#content)
 
-### 用户模块 user
+## <a id="api"></a>接口列表
 
-#### 登录 login `POST`
+### <a id="api-user"></a>用户模块 user
+
+#### <a id="api-user-login"></a>登录 login `POST`
 
 | key | type | desc |
 | --- | --- | --- |
@@ -122,5 +148,57 @@
 
 教师登录返回:
 
+```
+{
+    "c": 200,   // 状态码， 200表示成功
+    "d": {
+        "_id": "55955c0c940050901800002b",  // 用户id
+        "token": "hee36qpo728mc0ehmc07p7a1f7",  // token
+        "profile": {    // 用户信息
+            "name": "teacher-1",    // 姓名
+            "avatar": "55955503940050e416000029",   // 头像
+            "phone": "13000000009", // 手机号
+            "nickname": "teacher-1",    // 昵称
+            "birthday": "2015-07-15T00:00:00+0800", // 生日
+            "intro": "teacher-1",   // 简介
+            "gender": 1 // 性别
+        },
+        "school": { // 学校信息
+            "_id": "559556d2940050e41600002d",  // 园区id
+            "profile": {    // 园区属性
+                "name": "测试园区第二",   // 名称
+                "avatar": null, // 图标
+                "intro": "简介在", // 简介
+                "address": "地址辕",   // 地址
+                "contact": "032-3234081"    // 联系方式
+            }
+        },
+        "units": [  // 所拥有的班级列表
+            {
+                "_id": "5598d73f940050840c000029",  // 班级id
+                "owner": "55955c0c940050901800002b",    // 主班老师id
+                "profile": {    // 班级信息
+                    "name": "测试班级", // 班级名称
+                    "avatar": null, // logo
+                    "intro": "简介"   // 简介
+                }
+            },
+            {
+                "_id": "5598d92a9400503c23000029",
+                "owner": "55955a5e9400509018000029",
+                "profile": {
+                    "name": "班级二",
+                    "avatar": null,
+                    "intro": "简介二"
+                }
+            }
+        ]
+    },
+    "m": "",
+    "t": 1.8921089172363
+}
+```
+
 家长登录返回:
 
+[返回目录](#content)
