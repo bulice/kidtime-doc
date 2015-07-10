@@ -1,37 +1,52 @@
 # 萌养时光第三版 接口文档
 
-## <a id="content"></a>目录
+## 目录
 
-*   [更新历史](#history)
+*   [更新历史](#更新历史)
 *   [TODO](#TODO)
-*   [说明](#intro)
-    *   [基础部分](#intro-basis)
-    *   [翻页](#intro-paged)
-    *   [数据类型](#intro-dataType)
-    *   [身份验证](#intro-auth)
-    *   [文件部分](#intro-file)
-*   [接口列表](#api)
-    *   [用户模块](#api-user)
-        *   [用户登录](#api-user-login)
+*   [说明](#说明)
+    *   [基础部分](#基础部分)
+    *   [翻页](#翻页)
+    *   [身份验证](#身份验证)
+    *   [文件访问](#文件访问)
+    *   [文件上传](#文件上传)
+    *   [数据类型](#数据类型)
+*   [用户模块](#用户模块-user)
+    *   [登录](#登录-login-post)
+    *   [修改密码](#修改密码-changePassword-POST)
+    *   [联系人列表](#联系人列表-contact-GET)
+    *   [用户信息](#用户信息-detail-GET)
+    *   [修改个人信息](#修改个人信息-update-POST)
+*   [消息模块](#消息模块-feed)
+    *   [消息列表](#消息列表-index-GET-PAGED)
+    *   [创建消息](#创建消息-create-POST)
+    *   [删除消息](#删除消息-delete-GET)
+    *   [评论](#评论-comment-POST)
+    *   [删除评论](#删除评论-deleteComment-GET)
+    *   [点赞](#点赞-like-GET)
+    *   [取消赞](#取消赞-deleteLike-GET)
+    *   [置顶](#置顶-stick-GET)
+    *   [举报信息](#举报信息-report-POST)
+*   [任务模块](#任务模块-task)
 
-## <a id="history"></a>更新历史
+## 更新历史
 
 * 2015-7-9: 初始化文档, 已完成模块: User, Feed
 
-[返回目录](#content)
+[返回目录](#目录)
 
-## <a id="TODO"></a>TODO
+## TODO
 
 *   推送
 *   聊天
 *   频道
 *   等等等等
 
-[返回目录](#content)
+[返回目录](#目录)
 
-## <a id="intro"></a>说明
+## 说明
 
-### <a id="intro-basis"></a>基础部分
+### 基础部分
 
 *   api访问路径: <http://v3.kindertime.cn/api/{模块名}/{方法}>
 *   api测试器: <http://v3.kindertime.cn/test/index.html> **是否需要单独建一个测试环境?**
@@ -56,9 +71,11 @@
     
 *   字段表中加#的字段表示可空
 
-[返回目录](#content)
+*   为了防止XSS，`<`和`>`会被HTML转义
 
-### <a id="intro-paged"></a>翻页
+[返回目录](#目录)
+
+### 翻页
 
 *   接口可翻页标志: `PAGED`
 *   如果接口可翻页, 可在入参中加上`limit`字段限制每页数据条数, 默认为`10`
@@ -66,9 +83,42 @@
 *   向后翻页(获取历史消息): 在入参中加上`next`字段, 如无特殊说明, 值为当前接口返回的数据中最后一条数据的`_id`字段
 *   `prev`字段的优先级高于`next`
 
-[返回目录](#content)
+[返回目录](#目录)
 
-### <a id="intro-dataType"></a>数据类型
+### 身份验证
+
+*   除了用户登录接口外均需要验证, 如果验证失败, 则返回`status`为`401`
+*   验证方式: 在请求头部加入`AUTHORIZATION`字段, 值为用户登录时返回的`token`
+*   `token`有效期为**1个月**(这个有效期必需有, 这是PHP中SESSION控制机制), 每次请求会自动续期
+*   如果当前用户在另一个地方重新登录拿了新的`token`, 则当前`token`失效
+
+[返回目录](#目录)
+
+### 文件访问
+
+*   文件访问地址: <http://v3.kindertime.cn/site/file/id/{FileId}[/图片处理代码]>
+*   FileId为返回的文件id，图片处理代码由OSS提供，参考<http://docs.aliyun.com/?spm=5176.383663.9.3.HRj7uY#/pub/oss/oss-img-api/intruduction&rule>
+    
+### 文件上传
+
+*   上传地址：<http://v3.kindertime.cn/site/upload>
+*   请求方式：`POST`，格式为`multipart/form-data`，最大`16M`
+*   请求字段为`file`，数组格式，多文件上传
+*   成功返回：
+
+    | key | type | desc |
+    | --- | --- | --- |
+    | c | 200 | 状态码 |
+    | d | File[] | 文件数组 |
+    
+    File：
+    
+    | key | type | desc |
+    | --- | --- | --- |
+    | \_id | FileId | 文件ID |
+    | mine | string | 文件MINE类型 |
+
+### 数据类型
 
 *   基础数据类型列表
 
@@ -89,7 +139,9 @@
     | MongoId | MongoId | 长度为24的字符串, 每一条数据均有的数据id |
     | MongoDate | 时间戳 | 符合ISO8901格式的时间字符串, +8时区 |
     | FileId | 文件ID | 实际为MongoId, 但是是文件的, 可以通过文件接口访问 |
-    | Url | 链接 | 符合链接正则的字符串, 最长2kb |
+    | Url | 链接 | 正则`/^((http(s)?\:)?\/\/)?([a-z0-9][a-z0-9_-]*)(\.[a-z0-9][a-z0-9_-]*)+(\:\d{1,6})?(\/[^\s<>]*)?$/i`, 最长2kb |
+    | Phone | 手机号 | **字符串** 正则`/^1[34578]\d{9}$/` |
+    | Tel | 电话号码 | 正则`/^(\(\+\d{2,3}\))?(\d{3,4}-)?[1-9]\d{6,7}(-\d{1,4})?$/` |
 
 *   预定义的Object
     * Photo 照片
@@ -115,32 +167,95 @@
     | link_cover | FileId\|null | 链接封面 |
     | link_title | string(1, 200)\|null | 链接标题 |
     
-[返回目录](#content)
+    * User 用户
+    
+    | key | type | desc |
+    | --- | --- | --- |
+    | \_id | MongoId | 用户id |
+    | name | string(2, 20) | 姓名 |
+    | avatar | FileId\null | 头像 |
+    | phone | Phone | 手机号 |
+    | nickname | string(2, 20) | 昵称 |
+    | birthday | MongoDate\|null | 生日 |
+    | intro | string(1, 200)\|null | 简介 |
+    | gender | int | 性别 |
+    
+    * School 园区
+    
+    | key | type | desc |
+    | --- | --- | --- |
+    | \_id | MongoId | 园区id |
+    | name | string(2, 40) | 名称 |
+    | avatar | FileId\|null | logo文件id |
+    | intro | string(1, 200)\|null | 简介 |
+    | address | string(1, 200)\|null | 地址 |
+    | contact | Phone|Tel | 联系电话/手机 |
+    
+    * Unit 班级
+    
+    | key | type | desc |
+    | --- | --- | --- |
+    | \_id | MongoId | 班级id |
+    | name | string(1, 10) | 名称 |
+    | avatar |FileId\|null | logo |
+    | intro | string(1, 200)\|null | 简介 |
+    
+    * Child 小孩
+    
+    | key | type | desc |
+    | --- | --- | --- |
+    | \_id | MongoId | 小孩id |
+    | name | string(2, 10) | 姓名 |
+    | gender | int | 性别，同User中gender |
+    | avatar | FileId\|null | 头像 |
+    | intro | string(1, 200)\|null | 简介 |
+    | birthday | MongoDate\|null | 生日 |
+    | address | string(1, 200)\|null | 地址 |
+    | school | School | 学校 |
+    | unit | Unit | 班级 |
+    | father | User\|null | 父亲 |
+    | mother | User\|null | 母亲 |
+    
+    * Teacher 班级教师
+    
+    | key | type | desc |
+    | --- | --- | --- |
+    | \_id | MongoId | 教师id |
+    | role | string(2, 20) | 角色 |
+    | task | string(2, 40) | 任务 |
+    | user | User | 用户信息 |
+    
+    * Comment 评论
+    
+    | key | type | desc |
+    | --- | --- | --- |
+    | \_id | MongoId | 评论id |
+    | senderInfo | User | 评论人信息 |
+    | content | string(1, 200) | 评论内容 |
+    | replyInfo | User\|null | 回复人信息，为空表示非回复 |
+    | created_at | MongoDate |  |
+    
+    * Like 赞
+    
+    | key | type | desc |
+    | --- | --- | --- |
+    | senderInfo | User | 赞的人信息 |
+    
+[返回目录](#目录)
 
-### <a id="intro-auth"></a>身份验证
+## 用户模块 `user`
 
-*   除了用户登录接口外均需要验证, 如果验证失败, 则返回status为401
-*   验证方式: 在请求头部加入AUTHORIZATION字段, 值为用户登录时返回的token
-*   token有效期为1个月(这个有效期必需有, 这是PHP中SESSION控制机制), 每次请求会自动续期
-*   如果当前用户在另一个地方重新登录拿了新的token, 则当前token失效
-
-[返回目录](#content)
-
-## <a id="api"></a>接口列表
-
-### <a id="api-user"></a>用户模块 user
-
-#### <a id="api-user-login"></a>登录 login `POST`
+### 登录 `login` `POST`
 
 | key | type | desc |
 | --- | --- | --- |
-| username | string | 用户名 |
-| password | string | 密码 |
-| type | int | 3: 教师, 4: 家长 |
+| username | string(6, 20) | 用户名 |
+| password | string(6, 20) | 密码 |
+| #type | int | 3: 教师, 4(默认): 家长 |
 
 错误code:
 
-| key | type |
+| code | desc |
 | --- | --- | --- |
 | 500 | type错误 |
 | 501 | 用户名或密码错误 |
@@ -148,57 +263,272 @@
 
 教师登录返回:
 
-```
-{
-    "c": 200,   // 状态码， 200表示成功
-    "d": {
-        "_id": "55955c0c940050901800002b",  // 用户id
-        "token": "hee36qpo728mc0ehmc07p7a1f7",  // token
-        "profile": {    // 用户信息
-            "name": "teacher-1",    // 姓名
-            "avatar": "55955503940050e416000029",   // 头像
-            "phone": "13000000009", // 手机号
-            "nickname": "teacher-1",    // 昵称
-            "birthday": "2015-07-15T00:00:00+0800", // 生日
-            "intro": "teacher-1",   // 简介
-            "gender": 1 // 性别
-        },
-        "school": { // 学校信息
-            "_id": "559556d2940050e41600002d",  // 园区id
-            "profile": {    // 园区属性
-                "name": "测试园区第二",   // 名称
-                "avatar": null, // 图标
-                "intro": "简介在", // 简介
-                "address": "地址辕",   // 地址
-                "contact": "032-3234081"    // 联系方式
-            }
-        },
-        "units": [  // 所拥有的班级列表
-            {
-                "_id": "5598d73f940050840c000029",  // 班级id
-                "owner": "55955c0c940050901800002b",    // 主班老师id
-                "profile": {    // 班级信息
-                    "name": "测试班级", // 班级名称
-                    "avatar": null, // logo
-                    "intro": "简介"   // 简介
-                }
-            },
-            {
-                "_id": "5598d92a9400503c23000029",
-                "owner": "55955a5e9400509018000029",
-                "profile": {
-                    "name": "班级二",
-                    "avatar": null,
-                    "intro": "简介二"
-                }
-            }
-        ]
-    },
-    "m": "",
-    "t": 1.8921089172363
-}
-```
+| key | type | desc |
+| --- | --- | --- |
+| token | string | TOKEN |
+| user | User | 用户信息 |
+| school | School | 园区信息 |
+| units | Unit[] | 绑定班级列表 |
 
 家长登录返回:
 
-[返回目录](#content)
+| key | type | desc |
+| --- | --- | --- |
+| token | string | TOKEN |
+| user | User | 用户信息 |
+| children | Child[] | 所拥有的小孩列表 |
+
+[返回目录](#目录)
+
+### 修改密码 `changePassword` `POST`
+
+| key | type | desc |
+| --- | --- | --- |
+| old | string(6, 20) | 旧密码 |
+| new | string(6, 20) | 新密码 |
+
+错误码：
+
+| code | desc |
+| --- | -- |
+| 500 | 旧密码错误 |
+| 501 | 新密码不符合要求 |
+
+成功返回：**默认**
+
+[返回目录](#目录)
+
+### 联系人列表 `contact` `GET`
+
+成功返回：
+
+| key | type | desc |
+| owner | User | 班级主班教师 |
+| teachers | Teacher[] | 教师列表 |
+| users | User[] | 家长列表（当前班级有小孩的家长） |
+
+[返回目录](#目录)
+
+### 用户信息 `detail` `GET`
+
+| key | type | desc |
+| --- | --- | --- |
+| #id | MongoId | 要获取资料的用户id，默认为当前登录用户 |
+
+错误码：
+
+| code | desc |
+| --- | --- |
+| 500 | 用户不存在 |
+
+成功返回：
+
+| key | type | desc |
+| --- | --- | --- |
+| d | User | 用户信息 |
+
+[返回目录](#目录)
+
+### 修改个人信息 `update` `POST`
+
+| key | type | desc |
+| #name | string(2, 10) | 姓名 |
+| #nickname | string(2, 20) | 昵称 |
+| #gender | int | 性别，1男2女3未知 |
+| #birthday | MongoDate\|null | 生日 |
+| #intro | string(1, 140)\|null | 简介 |
+| #address | string(1, 140)\|null | 地址 |
+| #avatar | FileId\|null | 头像 |
+
+错误码：
+
+| code | desc |
+| --- | --- |
+| 500 | 数据错误 |
+
+成功返回：
+
+| key | type | desc |
+| --- | --- | --- |
+| d | User | 修改后的个人信息 |
+
+[返回目录](#目录)
+
+## 消息模块 `feed`
+
+**预定结构**
+
+* Feed 消息
+
+| key | type | desc |
+| --- | --- | --- |
+| \_id | MongoId | 消息id |
+| senderInfo | User | 发送人信息 |
+| content | string(1, 500)\|null | 消息内容，`media.type`不为5时可以为空 |
+| media | Media | 媒体信息 |
+| comments | Comment[] | 评论列表 |
+| like | Like[] | 赞列表 |
+| created_at | MongoDate |  |
+
+### 消息列表 `index` `GET` `PAGED`
+
+| key | type | desc |
+| --- | --- | --- |
+| #type | int | 消息类型，`1`园方，`2`@，`3`发布，默认全部 |
+| #stick | bool | 置顶消息，`true`置顶，默认`false`非置顶，如果为`true`则`type`无效 |
+
+成功返回：
+
+| key | type | desc |
+| --- | --- | --- |
+| d | Feed[] | 消息列表 |
+
+[返回目录](#目录)
+
+## 创建消息 `create` `POST`
+
+| key | type | desc |
+| --- | --- | --- |
+| #content | string(1, 500)\|null | 内容，`media.type`不为`5`时可为空 |
+| #media | Media|null | 媒体内容，默认`type`为`5` |
+| #receivers | MongoId[] | @的人列表 |
+
+错误码：
+
+| code | desc |
+| --- | --- |
+| 500 | 数据错误 |
+
+成功返回：
+
+| key | type | desc |
+| --- | --- | --- |
+| d | Feed | 发布的消息结构 |
+
+[返回目录](#目录)
+
+### 删除消息 `delete` `GET`
+
+| key | type | desc |
+| --- | --- | --- |
+| id | MongoId | 消息id |
+
+错误码：
+
+| code | desc |
+| --- | --- |
+| 500 | 指定id不存在 |
+| 501 | 没有权限 |
+
+成功返回：**默认**
+
+[返回目录](#目录)
+
+### 评论 `comment` `POST`
+
+| key | type | desc |
+| --- | --- | --- |
+| fid | MongoId | 评论的消息的id |
+| content | string(1, 200) | 评论内容 |
+| #receivers | MongoId[] | @的人列表 |
+| #reply | MongoId\|null | 回复的评论的id |
+
+错误码:
+
+| code | desc |
+| --- | --- |
+| 500 | fid 不存在 |
+| 501 | 数据错误 |
+
+成功返回：
+
+| key | type | desc |
+| --- | --- | --- |
+| d | Comment | 评论数据 |
+
+[返回目录](#目录)
+
+### 删除评论 `deleteComment` `GET`
+
+| key | type | desc |
+| --- | --- | --- |
+| id | MongoId | 评论id |
+
+错误码:
+
+| code | desc |
+| --- | --- |
+| 500 | id 不存在 |
+
+成功返回：**默认**
+
+[返回目录](#目录)
+
+### 点赞 `like` `GET`
+
+| key | type | desc |
+| --- | --- | --- |
+| fid | MongoId | 消息id |
+
+错误码:
+
+| code | desc |
+| --- | --- |
+| 500 | fid 不存在 |
+
+成功返回：**默认**
+
+[返回目录](#目录)
+
+### 取消赞 `deleteLike` `GET`
+
+| key | type | desc |
+| --- | --- | --- |
+| fid | MongoId | 消息id |
+
+错误码:
+
+| code | desc |
+| --- | --- |
+| 500 | fid 不存在 |
+
+成功返回：**默认**
+
+[返回目录](#目录)
+
+### 置顶 `stick` `GET`
+
+| key | type | desc |
+| --- | --- | --- |
+| fid | MongoId | 消息id |
+
+错误码:
+
+| code | desc |
+| --- | --- |
+| 500 | fid 不存在 |
+| 501 | 权限不足 |
+
+成功返回：**默认**
+
+[返回目录](#目录)
+
+### 举报信息 `report` `POST`
+
+| key | type | desc |
+| --- | --- | --- |
+| fid | MongoId | 消息id |
+| reason | string(5, 200) | 原因 |
+
+错误码:
+
+| code | desc |
+| --- | --- |
+| 500 | fid 不存在 |
+| 501 | 数据错误 |
+
+成功返回：**默认**
+
+[返回目录](#目录)
+
+## 任务模块 `task`
