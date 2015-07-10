@@ -189,5 +189,91 @@ certfile/keyfile使用
     
     作为一个非标准选项, 默认不设定此项表示永久性客户端永不失效.
     
-*   `pid_file <file_path>` */var/run/mosquitto.pid* **NOT RELOAD**
+*   `pid_file <file_path>` *null* **NOT RELOAD**
     
+    将PID文件写入指定的文件, 如果未指定, 则不会写入pid文件. 如果pid文件不能被写入, mosquitto将会退出. 此选项仅在mosquitto作为一个守护
+    进程进行运行时生效. 
+    
+    如果mosquitto被通过初始化脚本自动启动时, 通常必需要写入一PID文件, 这应该被配置成形如`/var/run/mosquitto.pid`的形式
+    
+*   `psk_file <file_path>` *null* **RELOAD**
+
+    设置PSK文件路径, 此选项需要PSK支持. 如果被定义, 文件内容将用于控制客户端访问, 每一行的格式应该为`identity:key`, `key`是一个16进制
+    的数(头部没有`0x`), 此时客户端必需提供一个能够匹配的`identity`和`PSK`来进行加密连接处理.
+    
+    重新加载时会重新加载文件内容, 已连接的客户端不受影响
+    
+*   `queue_qos0_messages [true|false]` *false* **RELOAD**
+    
+    设为true, 则当永久性客户端断开时将`QoS=0`的消息放入队列中. 如果加入, 则会计入`max_queued_messages`.
+    
+    注意MQTT v3.1声明`QoS=1, 2`的消息在这种情况下应该被保存, 因此此项不是一个标准选项.
+    
+*   `retained_persistence [true|false]`
+    
+    `persistence`的别名
+    
+*   `retry_interval <seconds>` *20* **RELOAD**
+    
+    当`QoS!=0`的包已发送`seconds`后broker未收到`RESP`则重新发送
+    
+*   `store_clean_interval <seconds>` *10* **RELOAD**
+    
+    储存的消息在储存`seconds`后将会被清除. 较小的值需要较少的内存和较多的CPU, 较大的值与之相反. `0`表示会被立即清除.
+    
+*   `sys_interval <seconds>` *10* **RELOAD**
+    
+    更新`$SYS`话题层的间隔时间, 提供broker有关的状态信息, `0`表示不更新发送
+    
+*   `upgrade_outgoing_qos [true|false]` *false* **RELOAD**
+    
+    MQTT协议要求一个消息的`QoS`不能被更改来匹配订阅者订阅的`QoS`, 启用此选项会改变这一情况. 如果为`true`, 则发送到订阅者的消息的`QoS`
+    永远与其订阅的相同. 这是一个非标准的选项.
+    
+*   `user <username>` *mosquitto* **NOT RELOAD**
+    
+    如果以`root`身份运行, 则在启动时修改用户为`username`, 用户组为指定用户的首选用户组. 如果mosquitto不能修改此用户和组. 将会错误退出.
+    指定的用户在数据写入时必需对`persistence`文件具有读写权限. 如果以非`root`身份运行, 则此项无效.
+    
+# Listeners
+
+## General Options
+
+*   `bind_address <address>` *null* **NOT RELOAD**
+
+    仅监听来自指定IP地址或域名的网络连接. 这对于限制特定网络接口访问很有帮助. 如果想限制仅本地访问mosquitto, 则使用
+    `bind_address <localhost>`. 这只对默认监听者有效, 使用`listener`变量去控制其它监听者.
+    
+*   `listener <port>[ address]` *null* **NOT RELOAD**
+    
+    指定监听网络连接端口. 第二个参数(可选)用来指定ip地址或域名, 如果此项被占用, 并且`bind_adderss`或`port`被占用, 则默认监听者不会被
+    启动. 此选项可以指定多次. 参见`mount_point`选项
+    
+*   `max_connections <count>` *-1* **NOT RELOAD**
+    
+    限制连接的客户端总数. `-1`表示不限制, 注意其它不属于mosquitto的限制. 参见`limit.conf`
+    
+*   `mount_point <topic_prefix>` *null* **RELOAD**
+
+    此选项用来分裂客户端到不同的组. 如果 一个客户端连接到一个使用了此选项的listener, 则此参数将会添加到所有的此客户端订阅的话题的头部.
+    当任意消息发送到此客户端时此前缀会被移除.
+    
+*   `port <port_number>` *1883* **NOT RELOAD**
+
+    设定网络监听端口
+    
+## SSL/TLS证书加密支持
+
+以下选项对所有支持SSL/TLS证书的listener有效. 参见 [SSL/TPL PSK加密支持](#SSL/TPL PSK加密支持)
+
+*   `cafile <file_path>` *null* **NOT RELOAD**
+
+    `cafile`和`capath`至少提供一项来支持SSL
+    
+    `cafile`用于定义包含有受信的PEM编码的CA证书的文件.
+    
+*   `capath directory path` *null* **NOT RELOAD**
+
+    `cafile`和`capath`至少提供一项来支持SSL
+
+        
