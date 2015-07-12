@@ -27,11 +27,17 @@
     *   [取消赞](#取消赞-deletelike-get)
     *   [置顶](#置顶-stick-get)
     *   [举报信息](#举报信息-report-post)
-*   [任务模块](#任务模块-task)
+*   [任务模块 task](#任务模块-task)
+    *   [创建任务 create POST](#创建任务-create-post)
+    *   [任务列表 index GET PAGED](#任务列表-index-get-paged)
+    *   [删除任务 delete GET](#删除任务-delete-get)
+    *   [接受任务 accept GET](#接受任务-accept-get)
 
 ## 更新历史
 
-* 2015-7-9: 初始化文档, 已完成模块: User, Feed
+*   2015-7-12: Task模块
+*   2015-7-10: User, Feed模块
+*   2015-7-9: 初始化文档
 
 [返回目录](#目录)
 
@@ -290,7 +296,7 @@
 错误码：
 
 | code | desc |
-| --- | -- |
+| --- | --- |
 | 500 | 旧密码错误 |
 | 501 | 新密码不符合要求 |
 
@@ -534,3 +540,79 @@
 [返回目录](#目录)
 
 ## 任务模块 `task`
+
+**预定数据类型**：
+
+*   Task
+
+| key | type | desc |
+| --- | --- | --- |
+| \_id | MongoId | 任务id |
+| title | string(5, 40) | 标题 |
+| content | string(5, 400) | 内容 |
+| startTime | MongoDate | 开始时间 |
+| endTime | MongoDate | 结束时间(不得小于`startTime`) |
+| isAccepted | bool | 当前用户是否已接受任务，`true`表示已接受，`false`反之，如果用户角色为教师，则为`true`，否则默认为`false` |
+
+***注***：对此项需求不是很明确，需要沟通一下。目前的处理方式是：教师创建任务派送给家长，家长代替小孩接受任务。
+
+### 创建任务 `create` `POST`
+
+| key | type | desc |
+| --- | --- | --- |
+| title | string(5, 40) |  |
+| content | string(5, 400) |  |
+| startTime | MongoDate |  |
+| endTime | MongoDate |  |
+
+错误码：
+
+| code | desc |
+| --- | --- |
+| 500 | 数据错误 |
+
+成功返回：
+
+| key | type | desc |
+| --- | --- | --- |
+| d | Task | 创建的任务详情 |
+
+### 任务列表 `index` `GET` `PAGED`
+
+成功返回：
+
+| key | type | desc |
+| --- | --- | --- |
+| d | Task[] | 任务列表 |
+
+### 删除任务 `delete` `GET`
+
+| key | type | desc |
+| --- | --- | --- |
+| id | MongoId | 任务id |
+
+错误码：
+
+| code | desc |
+| --- | --- |
+| 500 | 任务不存在，或没有权限，或数据库连接失败 |
+
+成功返回：**默认**
+
+### 接受任务 `accept` `GET`
+
+限家长操作
+
+| key | type | desc |
+| --- | --- | --- |
+| id | MongoId | 任务id |
+
+错误码：
+
+| code | desc |
+| --- | --- |
+| 500 | 任务不存在 |
+
+成功返回：**默认**
+
+[返回目录](#目录)
