@@ -32,9 +32,15 @@
     *   [任务列表 index GET PAGED](#任务列表-index-get-paged)
     *   [删除任务 delete GET](#删除任务-delete-get)
     *   [接受任务 accept GET](#接受任务-accept-get)
+*   [通知模块](#通知模块-inform)
+    *   [创建通知](#创建通知-create-post)
+    *   [通知列表](#通知列表-index-get-paged)
+    *   [删除通知](#删除通知-delete-get)
+    *   [阅读通知](#阅读通知-read-get)
 
 ## 更新历史
 
+*   2015-7-13: Inform模块
 *   2015-7-12: Task模块
 *   2015-7-10: User, Feed模块
 *   2015-7-9: 初始化文档
@@ -614,5 +620,74 @@
 | 500 | 任务不存在 |
 
 成功返回：**默认**
+
+[返回目录](#目录)
+
+## 通知模块 ·inform·
+
+**预定数据结构**：
+
+* Inform
+
+| key | type | desc |
+| --- | --- | --- |
+| \_id | MongoId | 通知id |
+| senderInfo | User | 创建人信息 |
+| title | string(5, 40) | 标题 |
+| content | string(5, 400) | 内容 |
+| created_at | MongoDate | 创建时间 |
+
+### 创建通知 ·create· ·POST·
+
+| key | type | desc |
+| --- | --- | --- |
+| title | string(5, 40) | 标题 |
+| content | string(5, 800) | 内容 |
+
+错误码：
+
+| code | desc |
+| --- | --- |
+| 500 | 数据错误 |
+
+成功返回：
+
+| key | type | desc |
+| --- | --- | --- |
+| d | Inform | 创建的通知详情 |
+
+### 通知列表 ·index· ·GET· ·PAGED·
+
+成功返回：
+
+| key | type | desc |
+| --- | --- | --- |
+| d | Inform[] | 通知列表 |
+
+### 删除通知 ·delete· ·GET·
+
+| key | type | desc |
+| --- | --- | --- |
+| id | MongoId | 通知id |
+
+错误码：
+
+| code | desc |
+| --- | --- |
+| 500 | 通知不存在，或没有权限，或数据库连接失败 |
+
+成功返回：**默认**
+
+### 阅读通知 `accept` `GET`
+
+| key | type | desc |
+| --- | --- | --- |
+| id | MongoId | 通知id |
+
+错误码：
+
+| code | desc |
+| --- | --- |
+| 500 | 通知不存在 |
 
 [返回目录](#目录)
