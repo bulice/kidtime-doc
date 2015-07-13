@@ -272,8 +272,59 @@ certfile/keyfile使用
     
     `cafile`用于定义包含有受信的PEM编码的CA证书的文件.
     
-*   `capath directory path` *null* **NOT RELOAD**
+*   `capath <directory_path>` *null* **NOT RELOAD**
 
     `cafile`和`capath`至少提供一项来支持SSL
+    
+    `capath`用于定义一个包含有受信的PEM编码的CA证书的文件的文件夹. 为了`capath`正确的工作, 证书文件名必需以`.pem`结束. 并且在添加或删除
+    证书时必需运行`c_rehash <path to capath>`.
+    
+*   `certfile <file_path>` *null* **NOT RELOAD**
+    
+    服务器PEM证书路径
+    
+*   `ciphers <cipher:list>` *null* **NOT RELOAD**
 
-        
+    允许使用的密码列表, 各个密码之间使用`,`连接, 可以通过`openssl ciphers`命令获取有效的密码
+    
+*   `crlfile <file_path>` *null* **NOT RELOAD**
+    
+    如果将`require_certificate`设置为`true`, 你可以通过建立一个撤消证书文件列表来拒绝特定的客户端证书访问. 如果这样做, 则通过此项来指
+    向PEM加密的撤消文件.
+    
+*   `keyfile <file_path>` *null* **NOT RELOAD**
+
+    PEM编码的`keyfile`路径
+    
+*   `require_certificate [ true | false ]` *false* **NOT RELOAD**
+
+    默认地, 一个支持SSL/TLS的listener将会通过一个相同的方式连接到支持`https`的服务器, 如果服务器具有一个CA签名的证书的话. 客户端将会验
+    证其为一个受信的证书. 这样做的目的是为了加密网络通信. 如果设置为`true`, 则客户端必需提供一个有效的证书用来处理网络连接. 这将允许在MQTT
+    之外实现对broker的访问控制.
+    
+*   `tls_version <version>` *all* **NOT RELOAD**
+
+    配置使用的TLS协议版本, 可选的值为`tlsv1.2`, `tlsv1.1`和`tlsv1`
+    
+*   `use_identity_as_username [true | false]` *false* **NOT RELOAD**
+
+    如果`require_certificate`为`true`, 你可以通过设置此项为`true`来使用来自客户端证书的`CN`值作为用户名, 这时`password_file`选项将
+    不会被使用
+    
+## SSL/TPL PSK加密支持
+
+以下选项用于配置支持基于SSL的PSK加密. 参见[SSL/TLS证书加密支持](#SSL/TLS证书加密支持)
+
+*   `ciphers <cipher:list>` *null* **NOT RELOAD**
+
+    当使用PSK, 使用的加密密码将从列表中选择有效的PSK密码, 如果想控制哪一个密码是有效的, 就使用这个选项. 有效密码列表可以通过
+    `openssl ciphers`指使获取. 并且应该被提供相同的输出格式
+    
+*   `psk_hint <hint>` *null* **NOT RELOAD**
+
+    此选项启用PSK支持同时充当检测员. `hint`将会发送到客户端并且可能被本地使用来进行身份验证. `hint`可以是任意字符串
+    
+*   `tls_version <version>` 
+
+    见上方
+
