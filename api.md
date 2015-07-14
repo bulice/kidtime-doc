@@ -623,7 +623,7 @@
 
 [返回目录](#目录)
 
-## 通知模块 ·inform·
+## 通知模块 `inform`
 
 **预定数据结构**：
 
@@ -637,7 +637,7 @@
 | content | string(5, 400) | 内容 |
 | created_at | MongoDate | 创建时间 |
 
-### 创建通知 ·create· ·POST·
+### 创建通知 `create` `POST`
 
 | key | type | desc |
 | --- | --- | --- |
@@ -656,7 +656,7 @@
 | --- | --- | --- |
 | d | Inform | 创建的通知详情 |
 
-### 通知列表 ·index· ·GET· ·PAGED·
+### 通知列表 `index` `GET` `PAGED`
 
 成功返回：
 
@@ -664,7 +664,7 @@
 | --- | --- | --- |
 | d | Inform[] | 通知列表 |
 
-### 删除通知 ·delete· ·GET·
+### 删除通知 `delete` `GET`
 
 | key | type | desc |
 | --- | --- | --- |
