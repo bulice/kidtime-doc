@@ -10,3 +10,4 @@
 4. Feed模块单独添加获取置顶消息接口
 
 5. 文档说明教师和家长指定班级的方式
+6. 删除评论 deleteComment GET 点赞 like GET 取消赞 deleteLike GET, 这个方法不应该用GET方法吧，删除的操作一般都是DELETE方法啊，然后点赞应该是POST方法吧
